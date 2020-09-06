@@ -1,8 +1,10 @@
 # Установка Nightscout на CentOS8
 Установим Nightscout на свой сервер под управлением CentOS8. Предполагается, что вы знакомы с командной строкой и работой с Linux.
 
-Имеем установленный сервер под управлением CentOS8, для простоты SELinux отключен.
-
+Имеем установленный сервер под управлением CentOS8, для простоты SELinux отключен. Сделаем необходимую подготовку, установим необходимые программы:
+```bash
+dnf install gcc git -y
+```
 ### Установим MongoDB
 
 Официальная документация по установке доступна [тут](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/)
@@ -109,4 +111,14 @@ node --version && npm --version
 ```
 У меня такие: v12.18.3, 6.14.6
 
-### Устанавливаен Nightscout
+### Устанавливаем Nightscout
+
+Ставить будем в папку ```/opt/nightscout```
+```bash
+mkdir /opt/nightscout
+cd /opt/nightscout
+git clone https://github.com/nightscout/cgm-remote-monitor.git
+cd cgm-remote-monitor
+npm install
+```
+
