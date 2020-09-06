@@ -3,7 +3,8 @@
 
 Имеем установленный сервер под управлением CentOS8, для простоты SELinux отключен. Сделаем необходимую подготовку, установим необходимые программы:
 ```bash
-dnf install gcc git -y
+dnf install git -y
+dnf groupinstall 'Development Tools' -y
 ```
 ### Установим MongoDB
 
