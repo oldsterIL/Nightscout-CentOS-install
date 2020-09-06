@@ -41,7 +41,7 @@ systemctl status mongod.service
            └─9384 /usr/bin/mongod -f /etc/mongod.conf
 
 ```
-(Не обязательный пункт)
+**(Не обязательный пункт)**
 
 > По умолчанию, любой пользователь на сервере может выполнять любые функции (запросы) в MongoDB. 
 
@@ -65,7 +65,7 @@ security:
 systemctl restart mongod.service
 ```
 
-Продолжаем, создаем базу(```nightscout```), добавляем пользователя(```userdb```) и пароль(```passdb``` - заменить на свой!) к ней. Заходим в консоль монго (если делали предыдущий шаг)
+**Продолжаем**, создаем базу(```nightscout```), добавляем пользователя(```userdb```) и пароль(```passdb``` - заменить на свой!) к ней. Заходим в консоль монго (если делали предыдущий шаг)
 ```bash
 mongo -u admin -p --authenticationDatabase admin
 вводим пароль admin (см. предыдущий шаг)
@@ -84,8 +84,29 @@ mongo
 
 ### Установим NodeJS
 
-Ставить будем из репозитория **AppStream**
-
+Ставить будем из репозитория **AppStream**, посмотрим существующие версии
 ```bash
-
+dnf module list nodejs
 ```
+Должно быть примерно так:
+```bash
+CentOS-8 - AppStream
+Name           Stream         Profiles                                      Summary                  
+nodejs         10 [d]         common [d], development, minimal, s2i         Javascript runtime       
+nodejs         12             common [d], development, minimal, s2i         Javascript runtime       
+```
+Доступны два потока, 10 и 12. **[d]** указывает, что версия 10 — это поток по умолчанию. Изменим его на 12.
+```bash
+dnf module enable nodejs:12 -y
+```
+Установим NodeJS
+```bash
+dnf install nodejs -y
+```
+Вместе с NodeJS устанавливается ```npm``` - пакетный менеджер, Проверим версии
+```bash
+node --version && npm --version
+```
+У меня такие: v12.18.3, 6.14.6
+
+### Устанавливаен Nightscout
