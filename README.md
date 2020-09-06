@@ -122,4 +122,62 @@ git clone https://github.com/nightscout/cgm-remote-monitor.git
 cd cgm-remote-monitor
 npm install
 ```
+Создаем запускной файл ```start.sh``` следующего содержания, в котором указываем переменные.
+Обратите внимание на ```MONGO_CONNECTION``` - тут указываем параметры для подключения к MongoDB. Остальные параметры можно посмотреть [тут](https://github.com/nightscout/cgm-remote-monitor#environment)
+```bash
+#!/bin/bash
 
+# environment variables
+export DISPLAY_UNITS="mg/dl"
+export MONGO_CONNECTION="mongodb://userdb:passdb@localhost:27017/nightscout"
+export PORT=1337
+export API_SECRET="Api_Secret_min_12_symbols"
+export PUMP_FIELDS="reservoir battery status"
+export DEVICESTATUS_ADVANCED=true
+export ENABLE="careportal basal cage sage boluscalc rawbg iob bwp bage mmconnect bridge openaps pump iob maker"
+export TIME_FORMAT=24
+export BASE_URL="YOURS_INTERNET_URL.RU"
+export INSECURE_USE_HTTP=true
+export ALARM_HIGH=on
+export ALARM_LOW=on
+export ALARM_TIMEAGO_URGENT=on
+export ALARM_TIMEAGO_URGENT_MINS=30
+export ALARM_TIMEAGO_WARN=on
+export ALARM_TIMEAGO_WARN_MINS=15
+export ALARM_TYPES=simple
+export ALARM_URGENT_HIGH=on
+export ALARM_URGENT_LOW=on
+export AUTH_DEFAULT_ROLES=denied
+export BG_HIGH=180
+export BG_LOW=72
+export BG_TARGET_BOTTOM=90
+export BG_TARGET_TOP=162
+export BRIDGE_MAX_COUNT=1
+export BRIDGE_PASSWORD=
+export BRIDGE_SERVER=EU
+export BRIDGE_USER_NAME=
+export CUSTOM_TITLE=MyTitle
+export DISABLE=
+export MONGO_COLLECTION=entries
+export NIGHT_MODE=on
+export OPENAPS_ENABLE_ALERTS=true
+export OPENAPS_FIELDS='status-symbol status-label iob meal-assist rssi'
+export OPENAPS_RETRO_FIELDS='status-symbol status-label iob meal-assist rssi'
+export OPENAPS_URGENT=60
+export OPENAPS_WARN=20
+#export PAPERTRAIL_API_TOKEN=some_token
+export PUMP_ENABLE_ALERTS=true
+export PUMP_FIELDS='battery reservoir clock status'
+export PUMP_RETRO_FIELDS='battery reservoir clock status'
+export PUMP_URGENT_BATT_V=1.3
+export PUMP_URGENT_CLOCK=30
+export PUMP_URGENT_RES=10
+export PUSHOVER=
+export SHOW_FORECAST=openaps
+export SHOW_PLUGINS='pump iob sage cage careportal'
+export SHOW_RAWBG=noise
+export THEME=colors
+
+# start server
+node server.js
+```
