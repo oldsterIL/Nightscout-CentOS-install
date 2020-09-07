@@ -178,3 +178,7 @@ export SCALE_Y=linear
 # start server
 node server.js
 ```
+Сделаем наш файл запускным
+```bash
+chmod +x start.sh
+```
