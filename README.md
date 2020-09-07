@@ -72,9 +72,22 @@ mongo -u admin -p --authenticationDatabase admin
 ```bash
 > use nightscout
 > db.createUser({user: "userdb", pwd: "passdb", roles:["readWrite"]})
+> db.createCollection("entries")
 > quit()
 ```
-База готова. Экспортирование базы из Heroku будет написано ниже.
+Проверяем
+```bash
+> use nightscout
+> show dbs
+```
+Должны увидить
+```bash
+admin       0.000GB
+config      0.000GB
+local       0.000GB
+nightscout  0.000GB
+```
+База готова. Выходим из консоли MongoDB ```Ctrl+C```. Экспортирование базы из Heroku будет написано ниже.
 
 ### Установим NodeJS
 
