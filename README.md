@@ -44,18 +44,14 @@ systemctl status mongod.service
            └─9384 /usr/bin/mongod -f /etc/mongod.conf
 
 ```
-**(Не обязательный пункт)**
-
-> По умолчанию, любой пользователь на сервере может выполнять любые функции (запросы) в MongoDB. 
-
-Чтобы этого избежать необходимо добавить пользователя ```admin``` и  включить аутентификацию. Для этого заходим в консоль mongo:
+Добавим пользователя ```admin``` и включить аутентификацию. Официальная [документация](https://docs.mongodb.com/manual/tutorial/enable-authentication/). Для этого заходим в консоль mongo:
 ```bash
 mongo
 ```
 и вставляем следующий код (замените ```ADMIN_PASSWORD``` на свой пароль):
 ```bash
 > use admin
-> db.createUser({user: "admin",pwd: "ADMIN_PASSWORD",roles: [{ role: "userAdminAnyDatabase", db: "admin" }]})
+> db.createUser({user: "admin",pwd: "ADMIN_PASSWORD",roles: [{ role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]})
 > quit()
 ```
 В ответ вы должны получить такое: ```Successfully added user```. Включаем аутентификацию, для этого редактируем файл ```/etc/mongod.conf```, находим в нем строку ```#security:``` и приводим к такому виду:
@@ -67,15 +63,10 @@ security:
 ```bash
 systemctl restart mongod.service
 ```
-
-**Продолжаем**, создаем базу(```nightscout```), добавляем пользователя(```userdb```) и пароль(```passdb``` - заменить на свой!) к ней. Заходим в консоль монго (если делали предыдущий шаг)
+Создаем базу(```nightscout```), добавляем пользователя(```userdb```) и пароль(```passdb``` - заменить на свой) к ней. Заходим в консоль монго
 ```bash
 mongo -u admin -p --authenticationDatabase admin
-вводим пароль admin (см. предыдущий шаг)
-```
-или
-```bash
-mongo
+вводим пароль admin
 ```
 Выполняем 
 ```bash
