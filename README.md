@@ -44,7 +44,7 @@ systemctl status mongod.service
            └─9384 /usr/bin/mongod -f /etc/mongod.conf
 
 ```
-Добавим пользователя ```admin``` и включить аутентификацию. Официальная [документация](https://docs.mongodb.com/manual/tutorial/enable-authentication/). Для этого заходим в консоль mongo:
+Добавим пользователя ```admin``` и включаем аутентификацию. Официальная [документация](https://docs.mongodb.com/manual/tutorial/enable-authentication/). Для этого заходим в консоль mongo:
 ```bash
 mongo
 ```
@@ -166,12 +166,6 @@ export CUSTOM_TITLE=MyTitle
 export DISABLE=
 export MONGO_COLLECTION=entries
 export NIGHT_MODE=off
-export OPENAPS_ENABLE_ALERTS=true
-export OPENAPS_FIELDS='status-symbol status-label iob meal-assist rssi'
-export OPENAPS_RETRO_FIELDS='status-symbol status-label iob meal-assist rssi'
-export OPENAPS_URGENT=60
-export OPENAPS_WARN=20
-#export PAPERTRAIL_API_TOKEN=some_token
 export PUMP_ENABLE_ALERTS=true
 export SHOW_PLUGINS='careportal'
 export SHOW_RAWBG=never
@@ -186,3 +180,4 @@ node server.js
 ```bash
 chmod +x start.sh
 ```
+Почему-то у меня не заработал Nightscout сразу, причиной оказалось, что 
