@@ -126,58 +126,107 @@ git clone https://github.com/nightscout/cgm-remote-monitor.git
 cd cgm-remote-monitor
 npm install
 ```
-Создаем запускной файл ```start.sh``` следующего содержания, в котором указываем переменные.
-Обратите внимание на ```MONGO_CONNECTION``` - тут указываем параметры для подключения к MongoDB. Остальные параметры можно посмотреть [тут](https://github.com/nightscout/cgm-remote-monitor#environment)
+
+
+
+Создаем запускной файл ```/opt/nightscout/cgm-remote-monitor/start.sh``` следующего содержания. Обратите внимание на ```MONGO_CONNECTION``` - тут указываем параметры для подключения к MongoDB. Остальные параметры можно посмотреть [тут](https://github.com/nightscout/cgm-remote-monitor#environment)
 ```bash
 #!/bin/bash
 
 # environment variables
-export DISPLAY_UNITS="mmol"
 export MONGO_CONNECTION="mongodb://userdb:passdb@localhost:27017/nightscout"
+export DISPLAY_UNITS="mmol"
+export BASE_URL="http://my_site.ru"
 export PORT=1337
-export API_SECRET="Api_Secret_min_12_symbols"
-export PUMP_FIELDS="reservoir battery status"
-export DEVICESTATUS_ADVANCED=true
+export DEVICESTATUS_ADVANCED="true"
+export mongo_collection="entries"
+export API_SECRET=NIGHTSCOUT_API_SECRET
 export ENABLE="careportal basal rawbg cob iob cage bwp upbat sage pump"
 export TIME_FORMAT=24
-export BASE_URL="YOURS_INTERNET_URL.RU"
-export INSECURE_USE_HTTP=true
-
-export ALARM_HIGH=on
-export ALARM_LOW=on
-export ALARM_TIMEAGO_URGENT=on
-export ALARM_TIMEAGO_URGENT_MINS=30
-export ALARM_TIMEAGO_WARN=on
-export ALARM_TIMEAGO_WARN_MINS=15
-export ALARM_TYPES=simple
-export ALARM_URGENT_HIGH=on
-export ALARM_URGENT_LOW=on
-
-export AUTH_DEFAULT_ROLES="readable devicestatus-upload"
-export BG_HIGH=260
-export BG_LOW=72
-export BG_TARGET_BOTTOM=80
-export BG_TARGET_TOP=180
-export BRIDGE_MAX_COUNT=1
-export BRIDGE_PASSWORD=
-export BRIDGE_SERVER=EU
-export BRIDGE_USER_NAME=
-export CUSTOM_TITLE=MyTitle
-export DISABLE=
-export MONGO_COLLECTION=entries
-export NIGHT_MODE=off
-export PUMP_ENABLE_ALERTS=true
-export SHOW_PLUGINS='careportal'
-export SHOW_RAWBG=never
 export THEME=colors
 export LANGUAGE=ru
 export SCALE_Y=linear
 
 # start server
-node server.js
+node /opt/nightscout/cgm-remote-monitor/server.js
 ```
 Сделаем наш файл запускным
 ```bash
 chmod +x start.sh
 ```
-Почему-то у меня не заработал Nightscout сразу, причиной оказалось, что 
+и пробуем запустить.
+```bash
+./start.sh
+```
+Почему-то у меня не заработал Nightscout сразу, причиной оказалось
+```bash
+Error: ENOENT: no such file or directory, open '/opt/nightscout/cgm-remote-monitor/tmp/cacheBusterToken'
+```
+Чтоб ее исправить, надо создать каталог ```tmp``` и файл ```cacheBusterToken```. Странно, что программа сама не делает этого.
+```bash
+mkdir /opt/nightscout/cgm-remote-monitor/tmp
+touch /opt/nightscout/cgm-remote-monitor/tmp/cacheBusterToken
+```
+После этого все запустилось
+```bash
+./start.sh
+```
+В консоль начало приходить примерно такое:
+```bash
+Load Complete:
+	 
+reloading sandbox data
+all buckets are empty
+For the COB plugin to function you need a treatment profile
+For the Basal plugin to function you need a treatment profile
+WS: running websocket.update
+WS: emitted clear_alarm to all clients
+tick 2020-09-07T18:29:33.800Z
+```
+Останавливаем ```Ctrl+C``` и делаем службу, чтоб Nightscout запускался автоматически, создаем файл ```/etc/systemd/system/nightscout.service``` следующего содержания
+```bash
+[Unit]
+Description=Nightscout Service      
+After=network.target
+After=mongod.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nightscout/cgm-remote-monitor
+ExecStart=/opt/nightscout/cgm-remote-monitor/start.sh
+[Install]
+WantedBy=multi-user.target
+```
+перезагружаем демона и стартуем сервис
+```bash
+systemctl daemon-reload
+systemctl enable nightscout.service
+systemctl start nightscout.service
+```
+Через некоторое время проверяем, что все работает:
+```bash
+systemctl status nightscout.service
+● nightscout.service - Nightscout Service
+   Loaded: loaded (/etc/systemd/system/nightscout.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2020-09-07 22:45:25 +04; 18s ago
+ Main PID: 37456 (start.sh)
+    Tasks: 12 (limit: 12525)
+   Memory: 61.0M
+   CGroup: /system.slice/nightscout.service
+           ├─37456 /bin/bash /opt/nightscout/cgm-remote-monitor/start.sh
+           └─37458 node /opt/nightscout/cgm-remote-monitor/server.js
+```
+Проверим, что порт слушается и проверим работу сайта
+```bash
+netstat -ltupen | grep 1337
+tcp        0      0 0.0.0.0:1337            0.0.0.0:*               LISTEN      0          123534     37458/node          
+```
+
+```bash
+curl http://localhost:1337 | grep "<title>"
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 43594  100 43594    0           <title>Nightscout</title>
+0  4257k      0 --:--:-- --:--:-- --:--:-- 4257k
+```
+Если увидили нечто такое - сайт работает.
