@@ -146,6 +146,7 @@ export TIME_FORMAT=24
 export THEME=colors
 export LANGUAGE=ru
 export SCALE_Y=linear
+export HOSTNAME=0.0.0.0
 
 # start server
 node /opt/nightscout/cgm-remote-monitor/server.js
