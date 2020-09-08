@@ -398,3 +398,17 @@ crontab -e
 ```bash
 0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot -q renew --renew-hook "systemctl restart nginx.service"
 ```
+
+### Импортируем данные с Heroku
+Заходим на [сайт](https://dashboard.heroku.com/apps/mytestgsm/settings), нажимаем кнопку "Reveal Config Vars", находим переменную "MONGODB_URI". В ней содержится вся необходимая информация для создания дампа. В моем случае она такая (данные изменены):
+```bash
+mongodb://heroku_slllg:4bo58b2jud67tjqvime2s@ds123963.mlab.com:23963/heroku_slllg
+```
+выполняем комманды
+```bash
+# Дамп с Heroku
+mongodump --host="ds123963.mlab.com:23963" -d heroku_slllg --username="heroku_slllg" --password="4bo58b2jud67tjqvime2s"
+# Восстановление в нашу базу
+mongorestore -d nightscout --username="userdb" --password="passdb" dump/heroku_slllgwxk
+```
+Заходим на сайт и видим наши данные.
