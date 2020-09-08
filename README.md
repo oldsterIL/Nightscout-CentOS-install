@@ -240,7 +240,7 @@ curl http://localhost:1337 | grep "<title>"
 ```bash
 dnf install nginx -y
 ```
-Откроем файл ```/etc/nginx/nginx.conf``` и закоментируем секцию, т.е. приведем к такому виду
+Откроем файл ```/etc/nginx/nginx.conf``` и закоментируем секцию ```server```, т.е. приведем к такому виду
 ```bash
 #    server {
 #        listen       80 default_server;
@@ -299,4 +299,29 @@ resolver_timeout 5s;
 proxy_set_header X-Forwarded-Host $host;
 proxy_set_header X-Forwarded-Server $host;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+```
+Создадим файл с конфигурацией нашего сайта ```/etc/nginx/conf.d/night.conf```
+```bash
+server {
+    listen  80;
+    server_name night.domain.ru default_server;
+    # enforce https
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name night.domain.ru default_server;
+
+    access_log /var/log/nginx/night-access.log;
+    error_log /var/log/nginx/night-error.log;
+
+    include /etc/nginx/includes/ssl;
+
+    location / {
+        proxy_pass http://127.0.0.1:1337/;
+        include /etc/nginx/includes/proxy_pass_reverse;
+    }
+
+}
 ```
