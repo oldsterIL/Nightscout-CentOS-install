@@ -406,6 +406,7 @@ mongodb://heroku_slllg:4bo58b2jud67tjqvime2s@ds123963.mlab.com:23963/heroku_slll
 ```
 выполняем комманды
 ```bash
+cd ~
 # Дамп с Heroku
 mongodump --host="ds123963.mlab.com:23963" -d heroku_slllg --username="heroku_slllg" --password="4bo58b2jud67tjqvime2s"
 # Восстановление в нашу базу
