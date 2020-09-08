@@ -1,7 +1,7 @@
 # Установка Nightscout на CentOS8
-Установим Nightscout на свой сервер под управлением CentOS8. Предполагается, что вы знакомы с командной строкой и работой с Linux.
+Установим Nightscout на свой сервер под управлением CentOS 8. Предполагается, что вы знакомы с командной строкой и работой с Linux.
 
-Имеем установленный сервер под управлением CentOS8, для простоты SELinux отключен. Сделаем необходимую подготовку, установим программы:
+Имеем установленный сервер под управлением CentOS 8, доступ по ssh. Для простоты SELinux отключен. Вход в консоль осуществлен под пользоватлем ```root``` или пользователя с правами ```sudo```. Сервер должен иметь "белый" статический IP или находиться за NAT-ом, тоже со статическим IP. Так же, должно быть зарегистрировано имя с указанием в DNS на наш сервер. Для примера, буду использовать имя "night.domain.ru". Сделаем необходимую подготовку, установим программы:
 ```bash
 dnf install git -y
 dnf groupinstall 'Development Tools' -y
@@ -33,7 +33,6 @@ systemctl status mongod.service
 ```
 Должно быть примерно так:
 ```bash
-# systemctl status mongod.service 
 ● mongod.service - MongoDB Database Server
    Loaded: loaded (/usr/lib/systemd/system/mongod.service; enabled; vendor preset: disabled)
    Active: active (running) since Sun 2020-09-06 12:28:55 +04; 19min ago
@@ -42,7 +41,6 @@ systemctl status mongod.service
    Memory: 74.5M
    CGroup: /system.slice/mongod.service
            └─9384 /usr/bin/mongod -f /etc/mongod.conf
-
 ```
 Добавим пользователя ```admin``` и включаем аутентификацию. Официальная [документация](https://docs.mongodb.com/manual/tutorial/enable-authentication/). Для этого заходим в консоль mongo:
 ```bash
@@ -114,33 +112,38 @@ dnf install nodejs -y
 ```bash
 node --version && npm --version
 ```
-У меня такие: v12.18.3, 6.14.6
+У меня такие: v12.18.3, 6.14.6, у вам могут отличаться
 
 ### Устанавливаем Nightscout
 
-Ставить будем в папку ```/opt/nightscout```
+Nightscout не может работать от ```root```, по этому создадим пользователя и сделаем запуск от него. Создаем пользователя ```nightscout```, определяя его домашний каталог ```/opt/nightscout```
 ```bash
-mkdir /opt/nightscout
-cd /opt/nightscout
+useradd -d /opt/nightscout -m -c "User for nightscout" nightscout
+```
+Заходим под новым пользователем и устанавливаем Nightscout
+```bash
+su - nightscout
 git clone https://github.com/nightscout/cgm-remote-monitor.git
 cd cgm-remote-monitor
 npm install
 ```
+Создаем запускной файл ```/opt/nightscout/cgm-remote-monitor/start.sh``` следующего содержания. 
+Обратите внимание на:
+```MONGO_CONNECTION``` - параметры для подключения к MongoDB.
+```API_SECRET``` - секретный ключ для доступа к сайту.
+Остальные параметры можно посмотреть [тут](https://github.com/nightscout/cgm-remote-monitor#environment)
 
-
-
-Создаем запускной файл ```/opt/nightscout/cgm-remote-monitor/start.sh``` следующего содержания. Обратите внимание на ```MONGO_CONNECTION``` - тут указываем параметры для подключения к MongoDB. Остальные параметры можно посмотреть [тут](https://github.com/nightscout/cgm-remote-monitor#environment)
 ```bash
 #!/bin/bash
 
 # environment variables
 export MONGO_CONNECTION="mongodb://userdb:passdb@localhost:27017/nightscout"
 export DISPLAY_UNITS="mmol"
-export BASE_URL="http://my_site.ru"
+export BASE_URL="http://night.domain.ru"
 export PORT=1337
 export DEVICESTATUS_ADVANCED="true"
 export mongo_collection="entries"
-export API_SECRET=NIGHTSCOUT_API_SECRET
+export API_SECRET="1234567890AB"
 export ENABLE="careportal basal rawbg cob iob cage bwp upbat sage pump"
 export TIME_FORMAT=24
 export THEME=colors
@@ -155,20 +158,11 @@ node /opt/nightscout/cgm-remote-monitor/server.js
 ```bash
 chmod +x start.sh
 ```
+Так же, уберем возможность запускать файл ```setup.sh``` - он нам не нужен, но находится рядом.
+```bash
+chmod -x setup.sh
+```
 и пробуем запустить.
-```bash
-./start.sh
-```
-Почему-то у меня не заработал Nightscout сразу, причиной оказалось
-```bash
-Error: ENOENT: no such file or directory, open '/opt/nightscout/cgm-remote-monitor/tmp/cacheBusterToken'
-```
-Чтоб ее исправить, надо создать каталог ```tmp``` и файл ```cacheBusterToken```. Странно, что программа сама не делает этого.
-```bash
-mkdir /opt/nightscout/cgm-remote-monitor/tmp
-touch /opt/nightscout/cgm-remote-monitor/tmp/cacheBusterToken
-```
-После этого все запустилось
 ```bash
 ./start.sh
 ```
@@ -184,17 +178,25 @@ WS: running websocket.update
 WS: emitted clear_alarm to all clients
 tick 2020-09-07T18:29:33.800Z
 ```
-Останавливаем ```Ctrl+C``` и делаем службу, чтоб Nightscout запускался автоматически, создаем файл ```/etc/systemd/system/nightscout.service``` следующего содержания
+Останавливаем ```Ctrl+C```
+
+Дальнейшие работы проводим под пользователем ```root```, нажимаем ```Ctrl+D``` и возвращаемся в консоль рута.
+Делаем службу, чтоб Nightscout запускался автоматически, создаем файл ```/etc/systemd/system/nightscout.service``` следующего содержания
 ```bash
 [Unit]
-Description=Nightscout Service      
+Description=Nightscout Service
 After=network.target
 After=mongod.service
 
 [Service]
 Type=simple
+
+User=nightscout
+Group=nightscout
+
 WorkingDirectory=/opt/nightscout/cgm-remote-monitor
 ExecStart=/opt/nightscout/cgm-remote-monitor/start.sh
+
 [Install]
 WantedBy=multi-user.target
 ```
