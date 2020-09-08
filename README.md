@@ -3,7 +3,7 @@
 
 Имеем установленный сервер под управлением CentOS 8, доступ по ssh. Для простоты SELinux отключен. Вход в консоль осуществлен под пользоватлем ```root``` или пользователя с правами ```sudo```. Сервер должен иметь "белый" статический IP или находиться за NAT-ом, тоже со статическим IP. Так же, должно быть зарегистрировано имя с указанием в DNS на наш сервер. Для примера, буду использовать имя "night.domain.ru". Сделаем необходимую подготовку, установим программы:
 ```bash
-dnf install git -y
+dnf install git nano mc atop htop -y
 dnf groupinstall 'Development Tools' -y
 ```
 ### Установим MongoDB
@@ -361,7 +361,40 @@ night.domain.ru has address 123.45.67.89
 ```
 Теперь можно сделать запрос на создание сертификата:
 ```bash
+# Запрос без оповещения на e-mail
 certbot certonly --nginx -d night.domain.ru --register-unsafely-without-email
-**ИЛИ**
+# ИЛИ такой, с оповещением на my_email@domain.ru
 certbot certonly --nginx -d night.domain.ru -m my_email@domain.ru
+```
+В результате, вы должны увидить такой лог (обрезан):
+```bash
+.........
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/night.domain.ru/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/night.domain.ru/privkey.pem
+.........
+```
+тут нас интересует пути до сертификата и приватный ключ. Изменим файл ```/etc/nginx/includes/ssl```, в самом начале:
+```bash
+ssl_certificate		/etc/letsencrypt/live/night.domain.ru/fullchain.pem;
+ssl_certificate_key	/etc/letsencrypt/live/night.domain.ru/privkey.pem;
+```
+теперь настроим службы nginx и запустим его
+```bash
+systemctl enable nginx.service
+systemctl start nginx.service
+```
+Теперь можно зайти на сайт ```https://night.domain.ru``` и продолжить настройки самого сайта.
+Так же, можно проверить на правильную настройку nginx и сертификатов на этом [сайте](https://www.ssllabs.com/ssltest).
+
+Настроим автообновление сертификата. Для этого выполним команду 
+```bash
+export EDITOR=mcedit
+crontab -e
+```
+и добавим строку в самый конец:
+```bash
+0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot -q renew --renew-hook "systemctl restart nginx.service"
 ```
