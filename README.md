@@ -308,7 +308,6 @@ server {
     # enforce https
     return 301 https://$server_name$request_uri;
 }
-
 server {
     listen 443 ssl http2;
     server_name night.domain.ru default_server;
@@ -322,6 +321,5 @@ server {
         proxy_pass http://127.0.0.1:1337/;
         include /etc/nginx/includes/proxy_pass_reverse;
     }
-
 }
 ```
