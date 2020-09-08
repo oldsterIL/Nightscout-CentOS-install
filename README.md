@@ -78,7 +78,7 @@ mongo -u admin -p --authenticationDatabase admin
 > use nightscout
 > show dbs
 ```
-Должны увидить
+Должны увидеть
 ```bash
 admin       0.000GB
 config      0.000GB
@@ -127,7 +127,7 @@ git clone https://github.com/nightscout/cgm-remote-monitor.git
 cd cgm-remote-monitor
 npm install
 ```
-Создаем запускной файл ```/opt/nightscout/cgm-remote-monitor/start.sh``` следующего содержания. 
+Создаем исполняемый файл ```/opt/nightscout/cgm-remote-monitor/start.sh``` следующего содержания. 
 Обратите внимание на:
 ```MONGO_CONNECTION``` - параметры для подключения к MongoDB.
 ```API_SECRET``` - секретный ключ для доступа к сайту.
@@ -154,7 +154,7 @@ export HOSTNAME=0.0.0.0
 # start server
 node /opt/nightscout/cgm-remote-monitor/server.js
 ```
-Сделаем наш файл запускным
+Сделаем наш файл исполняемым
 ```bash
 chmod +x start.sh
 ```
@@ -232,15 +232,15 @@ curl http://localhost:1337 | grep "<title>"
 100 43706  100 43706    0     0  3283k      0 --:--:-- --:--:-- --:--:-- 3556k
       <title>Nightscout</title>
 ```
-Если увидили нечто такое - сайт работает.
+Если увидели нечто такое - сайт работает.
 
 ### Устанавливаем Nginx
 
 Установим сам nginx и certbot (для получения сертификата от **Let’s Encrypt**)
 ```bash
-dnf install nginx certbot -y
+dnf install nginx certbot python3-certbot-nginx -y
 ```
-Откроем файл ```/etc/nginx/nginx.conf``` и закоментируем секцию ```server```, т.е. приведем к такому виду
+Откроем файл ```/etc/nginx/nginx.conf``` и закомментируем секцию ```server```, т.е. приведем к такому виду
 ```bash
 #    server {
 #        listen       80 default_server;
@@ -338,7 +338,7 @@ location = /.well-known/acme-challenge/ {
    return 404;
 }
 ```
-Теперь внесем изменения в файл ```/etc/nginx/conf.d/night.conf```, добавив в него строку ```include /etc/nginx/includes/letsencrypt;```, должно получится так: (лишнии строки я обрезал)
+Теперь внесем изменения в файл ```/etc/nginx/conf.d/night.conf```, добавив в него строку ```include /etc/nginx/includes/letsencrypt;```, должно получится так: (лишние строки я обрезал)
 ```bash
 server {
     listen 443 ssl http2;
@@ -348,7 +348,7 @@ server {
 ..........
 }
 ```
-Теперь можно сделать запрос на выпуск сертификатов. **Обращаю внимание**, что у вас должна быть правильно настроена записть в DNS, при которой все запросы по имени ```night.domain.ru``` должны приходить на ваш сервер. Проверить это можно через команду 
+Теперь можно сделать запрос на выпуск сертификатов. **Обращаю внимание**, что у вас должна быть правильно настроена запись в DNS, при которой все запросы по имени ```night.domain.ru``` должны приходить на ваш сервер. Проверить это можно через команду 
 ```bash
 host night.domain.ru
 night.domain.ru has address 123.45.67.89
@@ -366,7 +366,7 @@ certbot certonly --nginx -d night.domain.ru --register-unsafely-without-email
 # ИЛИ такой, с оповещением на my_email@domain.ru
 certbot certonly --nginx -d night.domain.ru -m my_email@domain.ru
 ```
-В результате, вы должны увидить такой лог (обрезан):
+В результате, вы должны увидеть такой лог (обрезан):
 ```bash
 .........
 IMPORTANT NOTES:
@@ -404,7 +404,7 @@ crontab -e
 ```bash
 mongodb://heroku_slllg:4bo58b2jud67tjqvime2s@ds123963.mlab.com:23963/heroku_slllg
 ```
-выполняем комманды
+выполняем команды
 ```bash
 cd ~
 # Дамп с Heroku
