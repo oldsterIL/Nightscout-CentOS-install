@@ -236,9 +236,9 @@ curl http://localhost:1337 | grep "<title>"
 
 ### Устанавливаем Nginx
 
-Установим сам nginx
+Установим сам nginx и certbot (для получения сертификата от **Let’s Encrypt**)
 ```bash
-dnf install nginx -y
+dnf install nginx certbot -y
 ```
 Откроем файл ```/etc/nginx/nginx.conf``` и закоментируем секцию ```server```, т.е. приведем к такому виду
 ```bash
@@ -269,8 +269,8 @@ mkdir /etc/nginx/includes
 ```
 файл ```/etc/nginx/includes/ssl```
 ```bash
-ssl_certificate		/etc/pki/tls/certs/fullchain.pem;
-ssl_certificate_key	/etc/pki/tls/certs/privkey.pem;
+#ssl_certificate	/etc/pki/tls/certs/fullchain.pem;
+#ssl_certificate_key	/etc/pki/tls/certs/privkey.pem;
 
 ssl_protocols TLSv1.2 TLSv1.3;
 
@@ -321,5 +321,30 @@ server {
         proxy_pass http://127.0.0.1:1337/;
         include /etc/nginx/includes/proxy_pass_reverse;
     }
+}
+```
+Для получения сертификата, надо изменить настройки nginx, для этого создаем каталог
+```bash
+mkdir -p /var/www/letsencrypt
+chown -R nginx:nginx /var/www/letsencrypt
+```
+Теперь нам нужно сделать так, чтобы любой запрос вида: ```http://night.domain.ru/.well-known/acme-challenge``` приводил к физическому размещению ```/var/www/letsencrypt/.well-known/acme-challenge```, для этого создадим файл ```/etc/nginx/includes/letsencrypt``` такого содержания
+```bash
+location ^~ /.well-known/acme-challenge/ {
+   default_type "text/plain";
+   root /var/www/letsencrypt;
+}
+location = /.well-known/acme-challenge/ {
+   return 404;
+}
+```
+Теперь внесем изменения в файл ```/etc/nginx/conf.d/night.conf```, добавив в него строку ```include /etc/nginx/includes/letsencrypt;```, должно получится так: (лишнии строки я убрал)
+```bash
+server {
+    listen 443 ssl http2;
+..........
+    include /etc/nginx/includes/ssl;
+    include /etc/nginx/includes/letsencrypt;
+..........
 }
 ```
