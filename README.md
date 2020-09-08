@@ -338,7 +338,7 @@ location = /.well-known/acme-challenge/ {
    return 404;
 }
 ```
-Теперь внесем изменения в файл ```/etc/nginx/conf.d/night.conf```, добавив в него строку ```include /etc/nginx/includes/letsencrypt;```, должно получится так: (лишнии строки я убрал)
+Теперь внесем изменения в файл ```/etc/nginx/conf.d/night.conf```, добавив в него строку ```include /etc/nginx/includes/letsencrypt;```, должно получится так: (лишнии строки я обрезал)
 ```bash
 server {
     listen 443 ssl http2;
@@ -347,4 +347,21 @@ server {
     include /etc/nginx/includes/letsencrypt;
 ..........
 }
+```
+Теперь можно сделать запрос на выпуск сертификатов. **Обращаю внимание**, что у вас должна быть правильно настроена записть в DNS, при которой все запросы по имени ```night.domain.ru``` должны приходить на ваш сервер. Проверить это можно через команду 
+```bash
+host night.domain.ru
+night.domain.ru has address 123.45.67.89
+```
+,где ```123.45.67.89``` - IP вашего сервера
+Так же, необходимо открыть порты 80, 443 на фаерволе. Я использую iptables (не люблю firewalld), по этому добавил правила:
+```bash
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+```
+Теперь можно сделать запрос на создание сертификата:
+```bash
+certbot certonly --nginx -d night.domain.ru --register-unsafely-without-email
+**ИЛИ**
+certbot certonly --nginx -d night.domain.ru -m my_email@domain.ru
 ```
