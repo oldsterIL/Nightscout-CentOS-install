@@ -410,6 +410,6 @@ cd ~
 # Дамп с Heroku
 mongodump --host="ds123963.mlab.com:23963" -d heroku_slllg --username="heroku_slllg" --password="4bo58b2jud67tjqvime2s"
 # Восстановление в нашу базу
-mongorestore -d nightscout --username="userdb" --password="passdb" dump/heroku_slllgwxk
+mongorestore -d nightscout --username="userdb" --password="passdb" dump/heroku_slllg
 ```
 Заходим на сайт и видим наши данные.
