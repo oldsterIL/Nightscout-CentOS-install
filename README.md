@@ -396,7 +396,7 @@ crontab -e
 ```
 и добавим строку в самый конец:
 ```bash
-0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot -q renew --renew-hook "systemctl restart nginx.service"
+0 0,12 * * * python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot -q renew --renew-hook "systemctl restart nginx.service"
 ```
 
 ### Импортируем данные с Heroku
