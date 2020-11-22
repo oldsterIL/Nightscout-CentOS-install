@@ -49,7 +49,7 @@ mongo
 и вставляем следующий код (замените ```ADMIN_PASSWORD``` на свой пароль):
 ```bash
 > use admin
-> db.createUser({user: "admin",pwd: "qwerty1234!",roles: [{ role: "userAdminAnyDatabase", db: "admin" }, { role: "readWriteAnyDatabase", db: "admin" }, { role: "root", db: "admin" }, "readWriteAnyDatabase" ] })
+> db.createUser({user: "admin",pwd: "ADMIN_PASSWORD",roles: [{ role: "userAdminAnyDatabase", db: "admin" }, { role: "readWriteAnyDatabase", db: "admin" }, { role: "root", db: "admin" }, "readWriteAnyDatabase" ] })
 > quit()
 ```
 В ответ вы должны получить такое: ```Successfully added user```. Включаем аутентификацию, для этого редактируем файл ```/etc/mongod.conf```, находим в нем строку ```#security:``` и приводим к такому виду:
